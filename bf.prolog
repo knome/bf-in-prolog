@@ -151,19 +151,16 @@ run( PP, II, Out ) :-
 
 %%%%%
 
-% used python to convert this... it runs out of memory every time, even after annotating with cuts
-% ... maybe I can do something to fix it later?
-% 
-% +[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-.
+% hello world from wikipedia
 % 
 helloworld(P) :- P =
                  [
-                     up,sl,dn,sl,lt,lt,sl,up,sl,dn,dn,dn,
-                     rt,el,dn,sl,lt,lt,lt,el,el,el,rt,rt,
-                     rt,dn,el,rt,dn,wr,dn,dn,dn,wr,rt,wr,
-                     wr,rt,wr,lt,lt,lt,lt,dn,wr,lt,up,wr,
-                     rt,rt,rt,rt,rt,wr,rt,wr,lt,lt,wr,lt,
-                     dn,wr
+                     up,up,up,up,up,up,up,up,sl,rt,up,up,up,up,sl,rt,up,up,rt,up,up,
+                     up,rt,up,up,up,rt,up,lt,lt,lt,lt,dn,el,rt,up,rt,up,rt,dn,rt,rt,
+                     up,sl,lt,el,lt,dn,el,rt,rt,wr,rt,dn,dn,dn,wr,up,up,up,up,up,up,
+                     up,wr,wr,up,up,up,wr,rt,rt,wr,lt,dn,wr,lt,wr,up,up,up,wr,dn,dn,
+                     dn,dn,dn,dn,wr,dn,dn,dn,dn,dn,dn,dn,dn,wr,rt,rt,up,wr,rt,up,up,
+                     wr 
                  ].
 
 %% makes sure we can loop
@@ -182,8 +179,8 @@ countdown_nested(P) :- P =
                     el
                 ].
 
-:- countdown( PP ),
+:- helloworld( PP ),
    program( PP ),
    II = [],
    run( PP, II, Out ),
-   writeln(Out).
+   format("~s~n", [Out]).
