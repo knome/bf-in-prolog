@@ -3,17 +3,23 @@
 
 %% first let's define what constitutes a bf program
 
-command( lt ). % left
-command( rt ). % right
-command( up ). % up         ( increment )
-command( dn ). % down       ( decrement )
-command( sl ). % start-loop
-command( el ). % end-loop
-command( rd ). % read
-command( wr ). % write
+compile( String, Program ) :-
+    atom_string( BigAtom, String ),
+    atom_chars( BigAtom, LittleAtoms ),
+    translate( LittleAtoms, Program ).
 
-program( [] )    :- true .
-program( [C|R] ) :- command( C ), program( R ).
+translate( Atoms, Out ) :- translate( Atoms, [], Out ).
+
+translate( []   , Thus, Out) :- reverse( Thus, Out ).
+translate( ['<'|R], Thus, Out ) :- translate( R, [lt|Thus], Out ).
+translate( ['>'|R], Thus, Out ) :- translate( R, [rt|Thus], Out ).
+translate( ['.'|R], Thus, Out ) :- translate( R, [wr|Thus], Out ).
+translate( [','|R], Thus, Out ) :- translate( R, [rd|Thus], Out ).
+translate( ['+'|R], Thus, Out ) :- translate( R, [up|Thus], Out ).
+translate( ['-'|R], Thus, Out ) :- translate( R, [dn|Thus], Out ).
+translate( ['['|R], Thus, Out ) :- translate( R, [sl|Thus], Out ).
+translate( [']'|R], Thus, Out ) :- translate( R, [el|Thus], Out ).
+translate( [ _ |R], Thus, Out ) :- translate( R, Thus     , Out ).
 
 %% MEMORY
 %%
@@ -143,44 +149,46 @@ ael([_ |PP], N, Match) :- ael( PP, N, Match ).
 
 %%%%%
 
-run( PP, II, Out ) :-
-    memory( II, MM ),              % mm out
-    runner( MM, PP, RR ),          % mm and pp in, rr out
-    runner_step( RR, ReverseOut ), % rr in, out... out
-    reverse( ReverseOut, Out).
+run( SP, II, Out ) :-
+    compile( SP, PP ),             % compile from string to atom representation
+    memory( II, MM ),              % create an empty representation of memory 
+    runner( MM, PP, RR ),          % create an initial state representation of the state needed to run the program
+    runner_step( RR, ReverseOut ), % run the program
+    reverse( ReverseOut, Out).     % reverse the output so it's in the order it was outputted
 
-%%%%%
+runWriteList( PP, II ) :-
+    run( PP, II, OO ),
+    writeln( OO ).
+
+runWriteString( PP, II ) :-
+    run( PP, II, OO ),
+    format( "~s~n", [OO] ).
+
+%%%%%%%%%%%
+%% PROGRAMS
 
 % hello world from wikipedia
 % 
-helloworld(P) :- P =
-                 [
-                     up,up,up,up,up,up,up,up,sl,rt,up,up,up,up,sl,rt,up,up,rt,up,up,
-                     up,rt,up,up,up,rt,up,lt,lt,lt,lt,dn,el,rt,up,rt,up,rt,dn,rt,rt,
-                     up,sl,lt,el,lt,dn,el,rt,rt,wr,rt,dn,dn,dn,wr,up,up,up,up,up,up,
-                     up,wr,wr,up,up,up,wr,rt,rt,wr,lt,dn,wr,lt,wr,up,up,up,wr,dn,dn,
-                     dn,dn,dn,dn,wr,dn,dn,dn,dn,dn,dn,dn,dn,wr,rt,rt,up,wr,rt,up,up,
-                     wr 
-                 ].
+helloworld( "
+++++++++[>++++[>++>+++>+++>+<<<<-]>+
+>+>->>+[<]<-]>>.>---.+++++++..+++.>>
+.<-.<.+++.------.--------.>>+.>++.
+" ).
 
-%% makes sure we can loop
-countdown(P) :- P =
-                [
-                    up,up,up,up,up,up,up,up,up,up,up,
-                    sl,wr,dn,el
-                ].
+% makes sure we can loop
+%
+countdown("
+++++++++++[.-]
+").
 
-%% makes sure nested loops are working
-countdown_nested(P) :- P =
-                [
-                    up,up,up,up,up,up,up,up,up,up,up,
-                    sl,
-                      wr,dn,lt,up,up,up,sl,wr,dn,el,rt,
-                    el
-                ].
+% makes sure nested loops are working
+%
+countdown_nested("
+++++++++++
+[.->+++[.-]<]
+").
 
-:- helloworld( PP ),
-   program( PP ),
-   II = [],
-   run( PP, II, Out ),
-   format("~s~n", [Out]).
+%%%%%%%
+%% MAIN
+
+:- helloworld(SP), runWriteString(SP, [] ).
